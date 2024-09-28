@@ -1,12 +1,8 @@
 package domain
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"sync"
-
-	"github.com/gorilla/websocket"
 )
 
 type Queue struct {
@@ -48,7 +44,7 @@ func (q *Queue) getPlayers() int {
 	return len(q.Players)
 }
 
-func (q *Queue) HandleNewWs(ws *websocket.Conn) {
+/* func (q *Queue) HandleNewWs(ws *websocket.Conn) {
 
 	p := NewPlayer(ws)
 
@@ -84,4 +80,4 @@ func (q *Queue) HandleNewWs(ws *websocket.Conn) {
 		}
 	}
 
-}
+} */

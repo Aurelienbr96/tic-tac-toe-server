@@ -1,12 +1,16 @@
 package main
 
 import (
-	"example/websocket/domain"
+	"example/websocket/infrastructure"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
 )
+
+// WS handler
+// GS BR
+// GM handler
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -15,7 +19,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func main() {
-	q := domain.NewQueue()
+	wsHandler := infrastructure.NewWebsocketHandler()
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		ws, err := upgrader.Upgrade(w, r, nil)

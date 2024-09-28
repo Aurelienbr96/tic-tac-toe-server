@@ -1,12 +1,9 @@
 package domain
 
 import (
-	"encoding/json"
+	"example/websocket/interfaces"
 	"fmt"
-	"log"
 	"sync"
-
-	"github.com/gorilla/websocket"
 )
 
 var winningCombinations = [][][2]int{
@@ -26,19 +23,15 @@ var winningCombinations = [][][2]int{
 var initialState = [3][3]string{}
 
 type Game struct {
-	Board     [3][3]string
-	Players   []*Player
-	Turn      int
-	GameMutex sync.Mutex
-	Queue     *Queue
+	Board [3][3]string
+	Turn  string
+	mu    sync.Mutex
 }
 
-func NewGame(player1, player2 *Player, q *Queue) *Game {
+func NewGame(players [2]interfaces.Connection) *Game {
 	return &Game{
-		Board:   initialState,
-		Players: []*Player{player1, player2},
-		Turn:    0,
-		Queue:   q,
+		Board: initialState,
+		Turn:  "X",
 	}
 }
 
@@ -53,7 +46,7 @@ func (g *Game) isBoardFull() bool {
 	return true
 }
 
-func (g *Game) broadcastBoard() {
+/* func (g *Game) broadcastBoard() {
 	winner := GetWinner(g)
 	log.Printf("%s", winner)
 
@@ -83,20 +76,20 @@ func (g *Game) broadcastBoard() {
 			}
 		}
 	}
-}
+} */
 
 func (g *Game) resetBoard() {
 	g.Board = initialState
 }
 
-func (g *Game) cleanupGame() {
+/* func (g *Game) cleanupGame() {
 	g.resetBoard()
 	// Optional: clear player list or reset game state completely
 	g.Players = nil
 	g = nil
-}
+} */
 
-func (g *Game) handleClient(ws *websocket.Conn, playerIndex int) {
+/* func (g *Game) handleClient(ws *websocket.Conn, playerIndex int) {
 	// stop the game if someone disconnect
 	defer func() {
 		g.GameMutex.Lock()
@@ -142,9 +135,49 @@ func (g *Game) handleClient(ws *websocket.Conn, playerIndex int) {
 		}
 		g.broadcastBoard()
 	}
+} */
+
+func (g *Game) GetWinner() string {
+	for _, combination := range winningCombinations {
+		cell1 := g.Board[combination[0][0]][combination[0][1]]
+		cell2 := g.Board[combination[1][0]][combination[1][1]]
+		cell3 := g.Board[combination[2][0]][combination[2][1]]
+
+		if cell1 != "" && cell1 == cell2 && cell2 == cell3 {
+			return cell1
+		}
+	}
+
+	if g.isBoardFull() {
+		return "draw"
+	}
+
+	return "none"
 }
 
-func (g *Game) startGame() (string, error) {
+func (g *Game) SetNextMove(x int, y int, m string) error {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	if x > 2 || y > 2 || y < 0 || x < 0 {
+		return fmt.Errorf("invalid board position")
+	}
+	if g.Board[x][y] != "" {
+		return fmt.Errorf("invalid board position")
+	}
+	g.Board[x][y] = m
+
+	// set next player
+
+	if g.Turn == "X" {
+		g.Turn = "O"
+	} else {
+		g.Turn = "X"
+	}
+
+	return nil
+}
+
+/* func (g *Game) startGame() (string, error) {
 	if len(g.Players) < 2 {
 		return "not enough player in the game", fmt.Errorf("not enough player in the game")
 	}
@@ -176,4 +209,4 @@ func (g *Game) startGame() (string, error) {
 	// Start the client handler
 
 	return "Game started correctly", nil
-}
+} */
