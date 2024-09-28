@@ -4,17 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"sync"
 
 	"github.com/gorilla/websocket"
 )
-
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
 
 var winningCombinations = [][][2]int{
 	// rows
@@ -104,36 +97,25 @@ func (g *Game) cleanupGame() {
 }
 
 func (g *Game) handleClient(ws *websocket.Conn, playerIndex int) {
+	// stop the game if someone disconnect
 	defer func() {
-
 		g.GameMutex.Lock()
 		log.Printf("game player length: %d, game: %v", len(g.Players), g)
-
-		g.Players[playerIndex].websockCon = nil
-		if playerIndex == 1 && g.Players[0] != nil {
-			g.Queue.QueuePlayer(g.Players[0])
-
-			sendMessagePlayer := SetPlayerMessage{
-				Type: "set-player",
+		for i, player := range g.Players {
+			if i != playerIndex {
+				sendMessagePlayer := InformationMessage{
+					Type:    "close-game",
+					Message: "Your opponent disconnected",
+				}
+				SendMessage(sendMessagePlayer, player.websockCon)
 			}
-
-			msgByte, _ := json.Marshal(sendMessagePlayer)
-			g.Players[0].websockCon.WriteMessage(websocket.TextMessage, msgByte)
-		} else if g.Players[1] != nil {
-			g.Queue.QueuePlayer(g.Players[1])
-
-			sendMessagePlayer := SetPlayerMessage{
-				Type: "set-player",
-			}
-
-			msgByte, _ := json.Marshal(sendMessagePlayer)
-			g.Players[1].websockCon.WriteMessage(websocket.TextMessage, msgByte)
+			player.websockCon.Close()
+			log.Printf("Client %v disconnected", player.websockCon.RemoteAddr())
 		}
+		g.cleanupGame()
 		g.GameMutex.Unlock()
 		// close the game
-		g.cleanupGame()
-		ws.Close()
-		log.Printf("Client %v disconnected", ws.RemoteAddr())
+		// g.cleanupGame()
 	}()
 
 	fmt.Printf("handle client %s", ws.RemoteAddr())
@@ -156,7 +138,6 @@ func (g *Game) handleClient(ws *websocket.Conn, playerIndex int) {
 		if receivedMessage.M == "reset_board" {
 			g.resetBoard()
 		} else {
-
 			SetNextMove(receivedMessage.X, receivedMessage.Y, receivedMessage.M, g)
 		}
 		g.broadcastBoard()
@@ -171,21 +152,21 @@ func (g *Game) startGame() (string, error) {
 	for i := 0; i < len(g.Players); i++ {
 		log.Printf("player: %d", g.Players[i].websockCon.RemoteAddr())
 
+		var sendMessagePlayer SetPlayerMessage
+		// first connected player X
 		if i == 0 {
-			sendMessagePlayer := SetPlayerMessage{
+			sendMessagePlayer = SetPlayerMessage{
 				Player: "x",
 				Type:   "set-player",
 			}
-			msgByte, _ := json.Marshal(sendMessagePlayer)
-			g.Players[i].websockCon.WriteMessage(websocket.TextMessage, msgByte)
+			// first connected player O
 		} else {
-			sendMessagePlayer := SetPlayerMessage{
+			sendMessagePlayer = SetPlayerMessage{
 				Player: "o",
 				Type:   "set-player",
 			}
-			msgByte, _ := json.Marshal(sendMessagePlayer)
-			g.Players[i].websockCon.WriteMessage(websocket.TextMessage, msgByte)
 		}
+		SendMessage(sendMessagePlayer, g.Players[i].websockCon)
 		go g.handleClient(g.Players[i].websockCon, i)
 	}
 

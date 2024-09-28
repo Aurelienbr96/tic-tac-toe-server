@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -49,14 +48,9 @@ func (q *Queue) getPlayers() int {
 	return len(q.Players)
 }
 
-func (q *Queue) HandleConnections(w http.ResponseWriter, r *http.Request) {
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Printf("Error upgrading connection: %v", err)
-		return
-	}
+func (q *Queue) HandleNewWs(ws *websocket.Conn) {
+
 	p := NewPlayer(ws)
-	var g *Game
 
 	q.QueuePlayer(p)
 
@@ -70,21 +64,23 @@ func (q *Queue) HandleConnections(w http.ResponseWriter, r *http.Request) {
 		response, _ := json.Marshal(newMsg)
 		ws.WriteMessage(websocket.TextMessage, response)
 	}
+	if q.getPlayers() >= 2 {
+		var g *Game
+		for q.getPlayers() >= 2 {
 
-	for q.getPlayers() >= 2 {
-
-		log.Printf("Queue: %v", q)
-		player1, player2, _ := q.DequeueTwoPlayers()
-		g = NewGame(player1, player2, q)
-		msg, err := g.startGame()
-		newMsg := InformationMessage{
-			Type:    "information",
-			Message: msg,
-		}
-		response, _ := json.Marshal(newMsg)
-		ws.WriteMessage(websocket.TextMessage, response)
-		if err != nil {
-			ws.Close()
+			log.Printf("Queue: %v", q)
+			player1, player2, _ := q.DequeueTwoPlayers()
+			g = NewGame(player1, player2, q)
+			msg, err := g.startGame()
+			newMsg := InformationMessage{
+				Type:    "information",
+				Message: msg,
+			}
+			response, _ := json.Marshal(newMsg)
+			ws.WriteMessage(websocket.TextMessage, response)
+			if err != nil {
+				ws.Close()
+			}
 		}
 	}
 
