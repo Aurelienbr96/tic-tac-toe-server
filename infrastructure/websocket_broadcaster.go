@@ -3,11 +3,7 @@ package infrastructure
 import (
 	"encoding/json"
 	"example/websocket/interfaces"
-	"fmt"
 	"log"
-	"sync"
-
-	"github.com/gorilla/websocket"
 )
 
 type Message struct {
@@ -16,30 +12,25 @@ type Message struct {
 }
 
 type WebsocketBroadcaster struct {
-	mu      sync.Mutex
-	players map[int]interfaces.Connection
 }
 
-func NewWebsocketBroadcaster(playerID int, conn *websocket.Conn) *WebsocketBroadcaster {
-	return &WebsocketBroadcaster{
-		players: make(map[int]interfaces.Connection),
+func NewWebsocketBroadcaster() *WebsocketBroadcaster {
+	return &WebsocketBroadcaster{}
+}
+
+func (broadcast *WebsocketBroadcaster) Broadcast(players []interfaces.Connection, messageType string, data interface{}) error {
+	message := Message{
+		Type: messageType,
+		Data: data,
 	}
-}
-
-func (broadcast *WebsocketBroadcaster) Broadcast(messageType string, data interface{}) error {
-	broadcast.mu.Lock()
-	defer broadcast.mu.Unlock()
-
-	var message Message
 
 	msg, err := json.Marshal(&message)
 	if err != nil {
 		return err
 	}
 
-	for i, conn := range broadcast.players {
+	for _, conn := range players {
 		if err := conn.WriteMessage(msg); err != nil {
-			delete(broadcast.players, i)
 			conn.Close()
 		}
 	}
@@ -47,29 +38,18 @@ func (broadcast *WebsocketBroadcaster) Broadcast(messageType string, data interf
 	return nil
 }
 
-func (broadcast *WebsocketBroadcaster) SendToPlayer(playerID int, messageType string, data interface{}) {
-	broadcast.mu.Lock()
-	defer broadcast.mu.Unlock()
-
-	var message Message
+func (broadcast *WebsocketBroadcaster) SendToPlayer(player interfaces.Connection, messageType string, data interface{}) error {
+	message := Message{
+		Data: data,
+		Type: messageType,
+	}
 
 	msg, err := json.Marshal(&message)
 	if err != nil {
 		log.Printf("error marshaling json %v", err)
+		return err
 	}
 
-	broadcast.players[playerID].WriteMessage(msg)
-}
-
-func (broadcast *WebsocketBroadcaster) RemovePlayer(playerID int) error {
-	broadcast.mu.Lock()
-	defer broadcast.mu.Unlock()
-
-	conn, exists := broadcast.players[playerID]
-	if !exists {
-		return fmt.Errorf("player %d not connected", playerID)
-	}
-	conn.Close()
-	delete(broadcast.players, playerID)
+	player.WriteMessage(msg)
 	return nil
 }

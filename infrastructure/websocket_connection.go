@@ -30,5 +30,5 @@ func (ws *WebsocketConnection) Close() error {
 }
 
 func (ws *WebsocketConnection) GetRemoteAddress() string {
-	return ws.GetRemoteAddress()
+	return ws.conn.RemoteAddr().String()
 }

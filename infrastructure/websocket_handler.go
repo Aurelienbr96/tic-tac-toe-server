@@ -15,7 +15,7 @@ var upgrader = websocket.Upgrader{
 }
 
 type WebsocketHandler struct {
-	GameManager *application.GameManager
+	GameManager interfaces.GameManager
 	Broadcaster interfaces.Broadcaster
 }
 
@@ -26,7 +26,7 @@ func NewWebsocketHandler(GameManager *application.GameManager, broadcaster inter
 	}
 }
 
-func (wsHandler WebsocketHandler) handleNewConnection(w http.ResponseWriter, r *http.Request) {
+func (wsHandler WebsocketHandler) HandleNewConnection(w http.ResponseWriter, r *http.Request) {
 	ws, _ := upgrader.Upgrade(w, r, nil)
 	con := NewWebsocketConnection(ws)
 	wsHandler.GameManager.HandleNewPlayer(con)

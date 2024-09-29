@@ -1,13 +1,13 @@
 package application
 
 import (
-	"example/websocket/domain"
 	"example/websocket/interfaces"
+	"log"
 	"sync"
 )
 
 type GameManager struct {
-	games       []*domain.Game
+	games       []interfaces.GameService
 	players     []interfaces.Connection
 	broadcaster interfaces.Broadcaster
 	mu          sync.Mutex
@@ -25,8 +25,8 @@ func (g *GameManager) UnqueueTwoPlayers() [2]interfaces.Connection {
 
 	var players [2]interfaces.Connection
 	if len(g.players) >= 2 {
-		players[0] = g.players[len(g.players)]
-		players[1] = g.players[len(g.players)-1]
+		players[0] = g.players[len(g.players)-1]
+		players[1] = g.players[len(g.players)-2]
 		g.players = g.players[2:]
 	}
 	return players
@@ -38,14 +38,13 @@ func (g *GameManager) QueuePlayer(player interfaces.Connection) {
 
 func (g *GameManager) HandleNewPlayer(player interfaces.Connection) {
 	g.QueuePlayer(player)
+	log.Printf("%d", len(g.players))
 
 	for len(g.players) >= 2 {
-		g.mu.Lock()
 		players := g.UnqueueTwoPlayers()
 
 		gameService := NewGameService(&players, g.broadcaster)
+		g.games = append(g.games, gameService)
 		gameService.StartGame()
-
-		g.mu.Unlock()
 	}
 }

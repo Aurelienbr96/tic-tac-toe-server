@@ -1,4 +1,3 @@
-// interfaces/connection.go
 package interfaces
 
 type Connection interface {
