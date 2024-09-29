@@ -1,22 +1,10 @@
 package domain
 
-import (
-	"encoding/json"
-	"log"
-
-	"github.com/gorilla/websocket"
-)
-
 type Message struct {
 	Board      [3][3]string `json:"board"`
 	NextPlayer int          `json:"nextPlayer"`
 	Type       string       `json:"type"`
 	Winner     string       `json:"winner"`
-}
-
-type SetPlayerMessage struct {
-	Player string `json:"player"`
-	Type   string `json:"type"`
 }
 
 type ReceivedMessage struct {
@@ -25,23 +13,15 @@ type ReceivedMessage struct {
 	M string `json:"m"`
 }
 
-type InformationMessage struct {
-	Message string `json:"message"`
-	Type    string `json:"type"`
+type SetBoardUpdateMessage struct {
+	Board [3][3]string `json:"board"` // Or any appropriate type
+	Turn  string       `json:"turn"`
 }
 
-func marshalJson(msg any) []byte {
-	msgByte, jsonErr := json.Marshal(msg)
-	if jsonErr != nil {
-		log.Printf("Error marshaling json %v", msg)
-	}
-	return msgByte
+type SetWinnerMessage struct {
+	Winner string `json:"winner"`
 }
 
-func SendMessage(msg any, ws *websocket.Conn) {
-	msgByte := marshalJson(msg)
-	err := ws.WriteMessage(websocket.TextMessage, msgByte)
-	if err != nil {
-		log.Printf("Error sending message to player %v", ws)
-	}
+type SetPlayerMessage struct {
+	Player string `json:"player"`
 }

@@ -1,30 +1,22 @@
 package main
 
 import (
-	"example/websocket/domain"
+	"example/websocket/application"
+	"example/websocket/infrastructure"
 	"log"
 	"net/http"
-
-	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
+// WS handler
+// GS BR
+// GM handler
 
 func main() {
-	q := domain.NewQueue()
+	broadcaster := infrastructure.NewWebsocketBroadcaster()
+	gameManager := application.NewGameManager(broadcaster)
+	wsHandler := infrastructure.NewWebsocketHandler(gameManager, broadcaster)
 
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		ws, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			log.Printf("Error upgrading connection: %v", err)
-			return
-		}
-		q.HandleNewWs(ws)
-	})
+	http.HandleFunc("/ws", wsHandler.HandleNewConnection)
 
 	log.Println("Server started on :8080")
 	err := http.ListenAndServe(":8080", nil)
