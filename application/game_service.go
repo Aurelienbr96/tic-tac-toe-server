@@ -68,22 +68,22 @@ func (gs *GameService) HandlePlayer(player interfaces.Connection) {
 		if receivedMessage.M == "reset-board" {
 			gs.Game.ResetGame()
 			gs.broadcaster.Broadcast(gs.Players[:], "reset-board", nil)
-		}
-
-		turn, _ := gs.Game.SetNextMove(receivedMessage.X, receivedMessage.Y, receivedMessage.M)
-		winner := gs.Game.GetWinner()
-		if winner == "none" {
-			board := gs.Game.GetBoard()
-			update := domain.SetBoardUpdateMessage{
-				Board: board,
-				Turn:  turn,
+		} else {
+			turn, _ := gs.Game.SetNextMove(receivedMessage.X, receivedMessage.Y, receivedMessage.M)
+			winner := gs.Game.GetWinner()
+			if winner == "none" {
+				board := gs.Game.GetBoard()
+				update := domain.SetBoardUpdateMessage{
+					Board: board,
+					Turn:  turn,
+				}
+				gs.broadcaster.Broadcast(gs.Players[:], "board-update", update)
+			} else if winner != "none" {
+				winnerUpdate := domain.SetWinnerMessage{
+					Winner: winner,
+				}
+				gs.broadcaster.Broadcast(gs.Players[:], "set-winner", winnerUpdate)
 			}
-			gs.broadcaster.Broadcast(gs.Players[:], "board-update", update)
-		} else if winner != "none" {
-			winnerUpdate := domain.SetWinnerMessage{
-				Winner: winner,
-			}
-			gs.broadcaster.Broadcast(gs.Players[:], "set-winner", winnerUpdate)
 		}
 		// Print received message
 		fmt.Printf("Received: %s\n", msg)

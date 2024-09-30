@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"example/websocket/application"
 	"example/websocket/infrastructure"
 	"log"
@@ -17,9 +18,18 @@ func main() {
 	wsHandler := infrastructure.NewWebsocketHandler(gameManager, broadcaster)
 
 	http.HandleFunc("/ws", wsHandler.HandleNewConnection)
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" {
+			myMsg := map[string]string{
+				"Hello": "Server Health OK",
+			}
+			msg, _ := json.Marshal(myMsg)
+			w.Write(msg)
+		}
+	})
 
-	log.Println("Server started on :8080")
-	err := http.ListenAndServe(":8080", nil)
+	log.Println("Server started on :5000")
+	err := http.ListenAndServe(":5000", nil)
 	if err != nil {
 		log.Fatalf("Error starting server: %v", err)
 	}
