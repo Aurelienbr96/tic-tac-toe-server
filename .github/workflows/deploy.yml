@@ -24,9 +24,6 @@ jobs:
         run: |
           GOOS=linux GOARCH=amd64 go build -o application
 
-      - name: Zip Application
-        run: zip -r application.zip application go.mod go.sum .ebextensions
-
       - name: List Contents of Zip File
         run: unzip -l application.zip
 
@@ -39,4 +36,4 @@ jobs:
           environment_name: websocket-dev
           version_label: v_${{ github.run_number }}
           region: eu-west-3
-          deployment_package: application.zip
+          deployment_package: application
