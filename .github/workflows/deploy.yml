@@ -22,16 +22,13 @@ jobs:
 
       - name: Build Application
         run: |
-          GOOS=linux GOARCH=amd64 go build -o server
+          GOOS=linux GOARCH=amd64 go build -o application
 
       - name: Zip Application
-        run: zip -r application.zip server
+        run: zip -r application.zip application .ebextensions
 
       - name: List Contents of Zip File
         run: unzip -l application.zip
-
-      - name: List Build Artifacts
-        run: ls -l
 
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v20
