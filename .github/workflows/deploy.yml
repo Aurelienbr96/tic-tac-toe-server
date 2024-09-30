@@ -25,7 +25,7 @@ jobs:
           GOOS=linux GOARCH=amd64 go build -o application
 
       - name: Zip Application
-        run: zip -r application.zip application .ebextensions
+        run: zip -r application.zip application .ebextensions Procfile
 
       - name: List Contents of Zip File
         run: unzip -l application.zip
