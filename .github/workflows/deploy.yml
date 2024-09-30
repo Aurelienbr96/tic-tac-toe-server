@@ -22,10 +22,13 @@ jobs:
 
       - name: Build Application
         run: |
-          GOOS=linux GOARCH=amd64 go build -o bin/application
+          GOOS=linux GOARCH=amd64 go build -o server
 
       - name: Zip Application
-        run: zip bin/application.zip bin/application
+        run: zip -r application.zip server Procfile .ebextensions
+
+      - name: List Contents of Zip File
+        run: unzip -l application.zip
 
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v20
@@ -36,4 +39,4 @@ jobs:
           environment_name: websocket-dev
           version_label: v_${{ github.run_number }}
           region: eu-west-3
-          deployment_package: bin/application.zip
+          deployment_package: application.zip
