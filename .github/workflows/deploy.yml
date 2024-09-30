@@ -24,9 +24,6 @@ jobs:
         run: |
           GOOS=linux GOARCH=amd64 go build -o application
 
-      - name: List Contents of Zip File
-        run: unzip -l application.zip
-
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v20
         with:
