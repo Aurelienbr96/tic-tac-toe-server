@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"example/websocket/interfaces"
+	"example/websocket/src/interfaces"
 	"fmt"
 )
 

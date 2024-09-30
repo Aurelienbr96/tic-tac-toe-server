@@ -1,7 +1,7 @@
 package application
 
 import (
-	"example/websocket/interfaces"
+	"example/websocket/src/interfaces"
 	"log"
 	"sync"
 )

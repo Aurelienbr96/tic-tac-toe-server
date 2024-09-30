@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"example/websocket/application"
-	"example/websocket/infrastructure"
+	"example/websocket/src/application"
+	"example/websocket/src/infrastructure"
 	"log"
 	"net/http"
 )

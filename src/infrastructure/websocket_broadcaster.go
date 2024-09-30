@@ -2,7 +2,7 @@ package infrastructure
 
 import (
 	"encoding/json"
-	"example/websocket/interfaces"
+	"example/websocket/src/interfaces"
 	"log"
 )
 

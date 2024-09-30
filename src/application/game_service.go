@@ -2,8 +2,8 @@ package application
 
 import (
 	"encoding/json"
-	"example/websocket/domain"
-	"example/websocket/interfaces"
+	"example/websocket/src/domain"
+	"example/websocket/src/interfaces"
 	"fmt"
 	"log"
 	"sync"

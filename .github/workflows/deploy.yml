@@ -22,10 +22,10 @@ jobs:
 
       - name: Build Application
         run: |
-          GOOS=linux GOARCH=amd64 go build -o server
+          GOOS=linux GOARCH=amd64 go build -o application
 
       - name: Zip Application
-        run: zip -r application.zip server Procfile .ebextensions
+        run: zip -r application.zip application Procfile .ebextensions
 
       - name: List Contents of Zip File
         run: unzip -l application.zip

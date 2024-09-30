@@ -1,8 +1,8 @@
 package infrastructure
 
 import (
-	"example/websocket/application"
-	"example/websocket/interfaces"
+	"example/websocket/src/application"
+	"example/websocket/src/interfaces"
 	"net/http"
 
 	"github.com/gorilla/websocket"
