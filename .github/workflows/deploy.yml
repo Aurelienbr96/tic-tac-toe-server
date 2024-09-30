@@ -35,5 +35,5 @@ jobs:
           application_name: websocket
           environment_name: websocket-dev
           version_label: v_${{ github.run_number }}
-          region: us-west-3
+          region: eu-west-3
           deployment_package: application.zip
