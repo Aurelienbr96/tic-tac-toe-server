@@ -21,7 +21,7 @@ func main() {
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
 			myMsg := map[string]string{
-				"Hello": "Server Health OK",
+				"Hello": "Server H OK",
 			}
 			msg, _ := json.Marshal(myMsg)
 			w.Write(msg)
